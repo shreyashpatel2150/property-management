@@ -4,16 +4,38 @@ import axios from 'axios';
 const state = () => ({
     property: null,
     errors: [],
-    propertyCreated: false
+    propertyCreated: false,
+    properties: [],
+    paginationData: null
 })
 
 const getters = {
     property: state => state.property,
     errors: state => state.errors,
     propertyCreated: state => state.propertyCreated,
+    properties: state => state.properties,
+    paginationData: state => state.paginationData
 }
 
 const actions = {
+
+    async getAllProperties({ commit }, query = null) {
+        let page = 1
+        let search = ''
+        if( null != query ) {
+            page = query.page || 1
+            search = query.search || ''
+        }
+        await axios.get(`${import.meta.env.VITE_API_URL}/property/list?page=${page}&search=${search}`)
+            .then(res => {
+                const pagination = {
+                    total: res.data.data.total,  // total number of elements or items
+                    total_pages: res.data.data.last_page // total pages in record
+                }
+                commit('setPaginationData', pagination);
+                commit('setProperties', res.data.data.data)
+            })
+    },
 
     async storeProperty({ commit }, property) {
         commit('setErrors', [])
@@ -37,7 +59,13 @@ const mutations = {
     },
     setPropertyCreated: (state, status) => {
         state.propertyCreated = status
-    }
+    },
+    setProperties: (state, properties) => {
+        state.properties = properties
+    },
+    setPaginationData: (state, paginationData) => {
+        state.paginationData = paginationData
+      },
 }
 
 export default {
