@@ -1,6 +1,6 @@
 <template>
-    <form v-on:submit.prevent="saveProperty" :validation-schema="schema">
-        <div class="card mt-4">
+    <form v-on:submit.prevent="editProperty">
+        <div class="card mt-4" v-if="property !== null">
             <div class="card-header">
                 <h4>Add Property</h4>
             </div>
@@ -49,6 +49,7 @@
                 </div>
                 <div class="input-group mb-3" v-for="(input, key) in amenities" :key="key">
                     <input type="text" class="form-control" v-model="amenityValues[key]" />
+                    <input type="hidden" class="form-control" v-model="amenityIds[key]" />
                     <div class="input-group-append">
                         <a class="input-group-text text-danger" @click="removeAminities(key)">Remove</a>
                     </div>
@@ -70,27 +71,42 @@
 <script>
 
 import { mapActions, mapGetters } from "vuex";
-import * as yup from 'yup'
 
 export default {
-    name: 'PropertyCreate',
+    name: 'PropertyEdit',
     data() {
         return {
-            amenities: [],
+            amenities: [{ name: '' }],
             amenityValues: [],
-            property: {}
+            amenityIds: []
         }
     },
 
     computed: {
-        ...mapGetters([ "errors", "propertyCreated" ])
+        ...mapGetters([ "errors", "property", "propertyUpdated" ])
     },
 
     watch: {
-        propertyCreated: function () {
-            if( true == this.propertyCreated ) {
+        property: function () {
+            if ( null != this.property ) {
+                let amenities = []
+                let amenityValues = []
+                let amenityIds = []
+                this.property.amenities.map(function (value, key) {
+                    amenities.push({ name: '' })
+                    amenityValues.push(value.name)
+                    amenityIds.push(value.id)
+                })
+                this.amenities = amenities
+                this.amenityValues = amenityValues
+                this.amenityIds = amenityIds
+            }
+        },
+
+        propertyUpdated: function () {
+            if( true == this.propertyUpdated ) {
                 this.$swal.fire({
-                    text: "Property created succesfully.",
+                    text: "Property updated succesfully.",
                     icon: "success",
                     timer: 1000,
                 });
@@ -99,30 +115,44 @@ export default {
             }
         }
     },
+    
+
+    created: function() {
+        this.id = this.$route.params.id;
+        this.getPropertyById(this.id)
+    },
 
     methods: {
-        ...mapActions(["storeProperty"]),
+        ...mapActions([ "getPropertyById", "updateProperty" ]),
         addAminities() {
             this.amenities.push({ name: '' })
+            this.amenityIds.push('')
+            this.amenityValues.push('')
         },
 
         removeAminities(index) {
             this.amenities.splice(index, 1)
             this.amenityValues.splice(index, 1)
+            this.amenityIds.splice(index, 1)
         },
 
-        saveProperty() {
+        editProperty() {
             const { name, description, address, floor_area_width, floor_area_length, land_area_width, land_area_length } = this.property;
             const amenities = this.amenityValues
-            this.storeProperty({
-                name,
-                description,
-                address,
-                floor_area_width,
-                floor_area_length,
-                land_area_width,
-                land_area_length,
-                amenities
+            const amenityIds = this.amenityIds
+            this.updateProperty({
+                property: {
+                    name,
+                    description,
+                    address,
+                    floor_area_width,
+                    floor_area_length,
+                    land_area_width,
+                    land_area_length,
+                    amenities,
+                    amenityIds
+                },
+                id: this.$route.params.id
             });
         }
     }

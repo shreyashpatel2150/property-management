@@ -6,7 +6,10 @@ const state = () => ({
     errors: [],
     propertyCreated: false,
     properties: [],
-    paginationData: null
+    paginationData: null,
+    deleteStatus: false,
+    displayMessage: '',
+    propertyUpdated: false
 })
 
 const getters = {
@@ -14,7 +17,10 @@ const getters = {
     errors: state => state.errors,
     propertyCreated: state => state.propertyCreated,
     properties: state => state.properties,
-    paginationData: state => state.paginationData
+    paginationData: state => state.paginationData,
+    deleteStatus: state => state.deleteStatus,
+    displayMessage: state => state.displayMessage,
+    propertyUpdated: state => state.propertyUpdated
 }
 
 const actions = {
@@ -47,6 +53,40 @@ const actions = {
             }).catch(err => {
                 commit('setErrors', err.response.data.errors)
             })
+    },
+
+    async deleteProperty({ commit }, id) {
+        await axios.delete(`${import.meta.env.VITE_API_URL}/property/${id}`)
+            .then(res => {
+                console.log('res', res)
+                commit('setDeleteStatus', true)
+                commit('setDisplayMessage', res.data.message)
+            }).catch(err => {
+                console.log(err)
+                commit('setDeleteStatus', false)
+                commit('setDisplayMessage', err.data.message)
+            })
+    },
+
+    async getPropertyById({ commit }, id) {
+        await axios.get(`${import.meta.env.VITE_API_URL}/property/${id}`)
+            .then(res => {
+                commit('setProperty', res.data.data)
+            }).catch(err => {
+                // commit('setErrors', err.response.data.errors)
+            })
+    },
+
+    async updateProperty({ commit }, payload) {
+        let property = payload.property
+        commit('setErrors', [])
+        commit('setPropertyUpdated', false)
+        await axios.put(`${import.meta.env.VITE_API_URL}/property/${payload.id}/update`, property)
+            .then(res => {
+                commit('setPropertyUpdated', true)
+            }).catch(err => {
+                commit('setErrors', err.response.data.errors)
+            })
     }
 }
 
@@ -65,7 +105,16 @@ const mutations = {
     },
     setPaginationData: (state, paginationData) => {
         state.paginationData = paginationData
-      },
+    },
+    setDeleteStatus: (state, status) => {
+        state.deleteStatus = status
+    },
+    setDisplayMessage: (state, message) => {
+        state.displayMessage = message
+    },
+    setPropertyUpdated: (state, status) => {
+        state.propertyUpdated = status
+    }
 }
 
 export default {

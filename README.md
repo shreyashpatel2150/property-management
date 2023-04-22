@@ -1,29 +1,29 @@
 # property-management
 
-This template should help get you started developing with Vue 3 in Vite.
+A Complete Single Page Application (SPA) or Property CRUD Application using Vue 3, Vue Router, Vue-Pagination, Searching, Sweet Alert, Vuex and all....
 
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 ## Project Setup
 
-```sh
+```bash
+git clone https://github.com/shreyashpatel2150/property-management.git
+cd property-management
+```
+
+Create file `.env` && Copy `.env.example` to `.env` and run
+
+```bash
 npm install
 ```
 
 ### Compile and Hot-Reload for Development
 
-```sh
+```bash
 npm run dev
 ```
 
 ### Compile and Minify for Production
 
-```sh
+```bash
 npm run build
 ```

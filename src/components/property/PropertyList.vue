@@ -1,7 +1,7 @@
 <template>
     <div class="card mt-4">
         <div class="card-header d-flex justify-content-between">
-            <h4>Add Property</h4>
+            <h4>Properties</h4>
             <router-link to="/property/create" class="btn btn-primary">Add Property</router-link>
         </div>
         <div class="card-body">
@@ -26,12 +26,22 @@
                         <td colspan="6" class="text-center">No Data found.</td>
                     </tr>
                     <tr v-for="(property, index) in properties" :key="property.id">
-                        <td>{{ index + 1 }}</td>
+                        <td>{{ propertyIndex + index }}</td>
                         <td>{{ property.name }}</td>
                         <td>{{ property.address }}</td>
                         <td>{{ property.display_floor_plan_area }}</td>
                         <td>{{ property.display_land_area }}</td>
-                        <td></td>
+                        <td>
+                            <button class="btn btn-danger mx-2" title="Delete Property" @click="deletePropertyModal(property.id)" >
+                                <i class="fa fa-trash" />
+                            </button>
+                            <router-link class="btn btn-primary mx-2" title="Edit Property"  :to="{ name: 'PropertyEdit', params: { id: property.id } }">
+                                <i class="fa fa-edit" />
+                            </router-link>
+                            <router-link class="btn btn-primary mx-2" title="View Property Detail"  :to="{ name: 'PropertyDetail', params: { id: property.id } }">
+                                <i class="fa fa-eye" />
+                            </router-link>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -65,24 +75,59 @@ export default {
                 page: 1,
                 search: "",
             },
-            search: ''
+            search: '',
+            propertyIndex: 1
         }
     },
 
     computed: {
-        ...mapGetters([ "properties", "paginationData" ])
+        ...mapGetters([ "properties", "paginationData", "deleteStatus", "displayMessage" ])
     },
 
     methods: {
-        ...mapActions(["getAllProperties"]),
+        ...mapActions([ "getAllProperties", "deleteProperty" ]),
 
         searchProperty() {
             this.getAllProperties(this.query)
+        },
+
+        async deletePropertyModal(id) {
+            this.$swal.fire({
+                text: "Are you sure to delete the property?",
+                icon: "error",
+                cancelButtonText: "Cancel",
+                confirmButtonText: "Yes, Confirm Delete",
+                showCancelButton: true,
+            }).then(async (result) => {
+                if (result['isConfirmed']) {
+                    await this.deleteProperty(id)
+                    this.getAllProperties(this.query)
+                    if( true == this.deleteStatus ) {
+                        this.$swal.fire({
+                            text: this.displayMessage,
+                            icon: "success",
+                            timer: 1000,
+                        });
+                    } else {
+                        this.$swal.fire({
+                            text: this.displayMessage,
+                            icon: "error",
+                            timer: 1000,
+                        });
+                    }
+                }
+            })
         }
     },
     
     created() {
         this.getAllProperties(this.query)
+    },
+
+    watch: {
+        properties: function () {
+            this.propertyIndex = ((this.query.page - 1) * 5) + 1
+        }
     },
 }
 </script>
